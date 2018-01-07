@@ -26,6 +26,27 @@
 
 #------------------------------------------------------------------
 #
+# day2sec()
+#
+#------------------------------------------------------------------
+
+def day2sec(timeInDays):
+	timeInSeconds = timeInDays*24*3600
+	return timeInSeconds
+
+#------------------------------------------------------------------
+#
+# day2sec()
+#
+#------------------------------------------------------------------
+
+def sec2day(timeInSeconds):
+	timeInDays = timeInSeconds/24/3600
+	return timeInDays
+
+
+#------------------------------------------------------------------
+#
 # timeConvert() converts times between different formats. I copied
 #	the idea from LASP, but I coded it up. Makes liberal use of 
 #	Python's time module.
@@ -162,6 +183,10 @@ def timeConvert(time, format_from, format_to):
 			utc_split = re.split('/|T|:',time[i])
 			#the regex leaves things as strings, this floats them.
 			time[i] = [float(j) for j in utc_split]
+
+	if format_to == 'CALENDAR':
+		for i in range(0,len(time)):
+			time[i] = time[i].strftime('%b %d, %Y %H:%M:%S.%f')
 
 	if len(time) == 1:
 		time = time[0]

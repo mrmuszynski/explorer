@@ -19,12 +19,12 @@ class celestialBody:
 		self.mu = -1
 		self.state = -1
 		self.simScenario = -1
-		self.stateHistory = empty((0,6),float)
-		self.currentState = empty((0,6),float)
+		self.stateHistory = empty((6,0),float)
+		self.currentState = empty((6,0),float)
 
 	def initSun(self):
 		self.name = 'Sun'
-		self.mu = 1.32712440018e20
+		self.mu = 1.32712440018e11
 		self.meeusCoeffs = {
 		 'L': array([0, 0, 0, 0, 0, 0]),
 		 'a': array([0, 0, 0, 0, 0, 0]),
@@ -35,8 +35,8 @@ class celestialBody:
 		}
 
 	def initVenus(self):
-		self.name = 'Sun'
-		self.mu = 1.32712440018e20
+		self.name = 'Venus'
+		self.mu = 3.24859e5
 		self.meeusCoeffs = {
 		 'L': array([181.979801, 58517.8156760, 0.00000165, -0.000000002]),
 		 'a': array([0.72332982, 0, 0, 0]),
@@ -48,7 +48,7 @@ class celestialBody:
 
 	def initEarth(self):
 		self.name = 'Earth'
-		self.mu = 3.986004418e14
+		self.mu = 3.986004418e5
 		self.meeusCoeffs = {
 		 'L': array([100.466449, 35999.3728519, -0.00000568, 0.0]),
 		 'a': array([1.000001018, 0, 0, 0]),
@@ -60,7 +60,7 @@ class celestialBody:
 
 	def initMars(self):
 		self.name = 'Mars'
-		self.mu = 3.986004418e14
+		self.mu = 4.282837e4
 		self.meeusCoeffs = {
 		 'L': array([355.433275, 19140.2993313, 0.00000261, -0.000000003]),
 		 'a': array([1.523679342, 0, 0, 0]),
@@ -72,7 +72,7 @@ class celestialBody:
 
 	def initJupiter(self):
 		self.name = 'Jupiter'
-		self.mu = 3.986004418e14
+		self.mu = 1.26686534e8
 		self.meeusCoeffs = {
 		 'L': array([34.351484, 3034.9056746, -0.00008501, 0.000000004]),
 		 'a': array([5.202603191, 0.0000001913, 0, 0]),
@@ -84,7 +84,7 @@ class celestialBody:
 
 	def initSaturn(self):
 		self.name = 'Saturn'
-		self.mu = 3.986004418e14
+		self.mu = 3.7931187e14
 		self.meeusCoeffs = {
 		 'L': array([50.077471, 1222.1137943, 0.00021004, -0.000000019]),
 		 'a': array([9.554909596, -0.0000021389, 0, 0]),
@@ -96,7 +96,7 @@ class celestialBody:
 
 	def initUranus(self):
 		self.name = 'Uranus'
-		self.mu = 3.986004418e14
+		self.mu = 5.793939e6
 		self.meeusCoeffs = {
 		 'L': array([314.055005, 429.8640561, 0.00030434, 0.000000026]),
 		 'a': array([19.218446062, -0.0000000372, 0.00000000098, 0]),
@@ -108,7 +108,7 @@ class celestialBody:
 
 	def initNeptune(self):
 		self.name = 'Neptune'
-		self.mu = 3.986004418e14
+		self.mu = 6.836529e6
 		self.meeusCoeffs = {
 		 'L': array([304.348665, 219.8833092, 0.00030926, 0.000000018]),
 		 'a': array([30.110386869, -0.0000001663, 0.00000000069, 0]),
@@ -120,7 +120,7 @@ class celestialBody:
 
 	def initPluto(self):
 		self.name = 'Pluto'
-		self.mu = 3.986004418e14
+		self.mu = 8.71e2
 		self.meeusCoeffs = {
 		 'L': array([238.92903833, 145.20780515, 0.0, 0.0]),
 		 'a': array([39.48211675, -0.00031596, 0.0, 0.0]),
@@ -142,20 +142,22 @@ class celestialBody:
 				  coeffs[3]*T**3 
 		return element, T
 
-	def meeusStateUpdate(self):
+	def meeusStateUpdate(self, t):
 		"""!
 		Taken from CU Boulder ASEN 6008 Interplanetary Mission Design
 		notes by Kate Davis
 		"""
-		t = self.simScenario.currentTime
 		L,T = self.calculateMeeus(self.meeusCoeffs['L'], t)
-		a,T = self.calculateMeeus(self.meeusCoeffs['a'], t)*au/1000
+		a,T = self.calculateMeeus(self.meeusCoeffs['a'], t)
+		a *= au/1000
 		e,T = self.calculateMeeus(self.meeusCoeffs['e'], t)
 		i,T = self.calculateMeeus(self.meeusCoeffs['i'], t)
+
 		OMEGA,T = self.calculateMeeus(self.meeusCoeffs['OMEGA'], t)
 		PI,T = self.calculateMeeus(self.meeusCoeffs['PI'], t)
 		omega = PI - OMEGA
 		M = L - PI
+
 
 		Cen = (2*e-e**3/4+5*e**5/96)*sin(M) + \
 			  (5*e**2/4-11*e**4/24)*sin(2*M) + \
@@ -166,8 +168,7 @@ class celestialBody:
 
 		nu = M + Cen
 
-		self.currentState = coe2rv(
-			a,e,i,OMEGA,omega,nu,mu=1.32712440018e20)
+		return coe2rv(a,e,i,OMEGA,omega,nu,mu=1.32712428e11)
 
 
 

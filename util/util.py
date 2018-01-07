@@ -24,6 +24,44 @@
 # D-
 ###############################################################################
 
+from numpy import deg2rad, outer, linspace, sin, cos, ones, vstack, size
+from numpy import meshgrid
+
+###############################################################################
+#
+#	tilde() is a function
+#
+###############################################################################
+def tilde(threevec):
+        import numpy as np
+        x1, x2, x3 = threevec
+        return np.array([
+                [  0,-x3, x2],
+                [ x3,  0,-x1],
+                [-x2, x1,  0]
+                ])
+
+###############################################################################
+#
+#	sphereSample() is a function
+#
+###############################################################################
+
+def sphereSample(thetaBins, phiBins):
+	lons = deg2rad(linspace(-180, 180, thetaBins))
+	lats = deg2rad(linspace(0, 180, phiBins)[::-1])
+	lats, lons = meshgrid(lats,lons)
+	lons = lons.reshape(1,-1)[0]
+	lats = lats.reshape(1,-1)[0]
+
+	e1 = cos(lons)*sin(lats)
+	e2 = sin(lons)*sin(lats)
+	e3 = cos(lats)
+
+	e = vstack([e1,e2,e3])
+
+	return e
+
 ###############################################################################
 #	block_diag() is used to create a block diagonal matrix given a set of
 #	smaller matrices. It takes a numpy array in the form:
@@ -174,8 +212,6 @@ def rz (theta):
 		rz = rz.reshape((3,3*len(theta)))
 	except:
 		rz = rz.reshape(3,3)
-	
-
 	return rz
 
 def r1 (theta):
@@ -248,3 +284,61 @@ def interpolateLambdaDependent(ex,lambda_set):
 	'lambda': array(lambda_set_ex),
 	'throughput': array(int_ex)
 }
+
+###########################################################################
+#
+# rasterize() floors the pixel and line coordinates and the uses pandas
+#		to sum all intensity that falls in the same bin.
+#
+###########################################################################
+def rasterize(pixelResolution,lineResolution,pixelCoord,lineCoord,intensity, **kwargs):
+	"""!
+	@param pixelResolution: number of pixels in the width dimension of the
+		detector array
+	@param lineResolution: number of pixels in the height dimension of the
+		detector array
+	@param pixelCoord: x (pixel) coordinate of every point source in scene
+	@param lineCoord: y (line) coordinate of every point source in scene
+	@param intensity: incident intensity of every point source in scene
+
+	@return detectorArray: array with summed intenisty for every pixel in
+		the detector array
+	"""
+	from numpy import floor, zeros, array, arange, append 
+	from numpy import concatenate, logical_and
+	from pandas import DataFrame
+
+	try:
+		avg = kwargs['avg']
+	except:
+		avg = 0
+		
+	#adding PSF introduces some values that are not on the detector. Remove them here
+
+	positiveCoords = logical_and(pixelCoord > 0, lineCoord > 0)
+	pixelCoord = pixelCoord[positiveCoords]
+	lineCoord = lineCoord[positiveCoords]
+	intensity = intensity[positiveCoords]
+
+	notTooBig = logical_and(pixelCoord < pixelResolution, lineCoord < lineResolution)
+	pixelCoord = pixelCoord[notTooBig]
+	lineCoord = lineCoord[notTooBig]
+	intensity = intensity[notTooBig]
+
+	intPixCoord = floor(pixelCoord).astype(int)
+	intLineCoord = floor(lineCoord).astype(int)
+
+	detectorPosition = (lineResolution*intLineCoord + intPixCoord)
+	detectorPosition = append(detectorPosition,arange(pixelResolution*lineResolution))
+	intensity = append(intensity,zeros(pixelResolution*lineResolution))
+
+	data = concatenate([detectorPosition,intensity])
+	data = data.reshape(2,int(len(data)/2)).T
+	df = DataFrame(data,columns = ["Position","Intensity"])
+
+	if avg == 1:
+		detectorArray = df.groupby("Position").mean().values.T[0]
+	else:
+		detectorArray = df.groupby("Position").sum().values.T[0]
+
+	return detectorArray

@@ -136,9 +136,10 @@ def anomalies(key,value,a,e,**kwargs):
 	#
 	#if it is, do a modulo to find out how long it is after
 	#the most recent periapse.
+
 	period = 2*np.pi*np.sqrt(a**3/mu)
 	
-	if key == 't' and sum(value >= period):
+	if key == 't' and value >= period:
 		if silent == 0:
 			print("orbits.anomalies warning: Time passed > period for some values.")
 			print("Converting to time since periapse.")
@@ -161,7 +162,6 @@ def anomalies(key,value,a,e,**kwargs):
 			print("orbits.anomalies warning: Some angles greater than 2pi")
 			print("orbits.anomalies warning: Performing modulo to get angle < 2pi")
 		value = value % (2*np.pi)
-
 
 	######################################
 	# PART 2. CONVERSIONS (single steps) #
@@ -199,19 +199,18 @@ def anomalies(key,value,a,e,**kwargs):
 		#this wastes a lot of cycles recomputing values
 		#where delta is already small. There's probably
 		#a smarter way to do this.
-
 		try:
 			maxval = max(abs(delta))
 		except:
-			maxval = delta
+			maxval = abs(delta)
 
-		while maxval > 0.0000001:
+		while maxval > 1e-12:
 			delta = (M-E+e*np.sin(E))/(1-e*np.cos(E))
 			E = E + delta
 			try:
 				maxval = max(abs(delta))
 			except:
-				maxval = delta
+				maxval = abs(delta)
 		return E
 	#convert eccentric anomaly to true anomaly
 	def E2nu(E):
@@ -454,6 +453,7 @@ def pqw2ijk (OMEGA, omega, i):
 	#3. Rotate by -omega about z
 	pqw2ijk = rz(-OMEGA)*rx(-i)*rz(-omega)
 	return pqw2ijk
+
 #------------------------------------------------------------------
 #
 # coe2rv() converts from classical orbital elements to position
@@ -500,52 +500,27 @@ def coe2rv (a, e, i, OMEGA, omega, nu, **kwargs):
 	#define semipameter
 	p = a*(1-e**2)
 
-	try:
-		#define r in the perifocal plane
-		r_pqw = np.array([ \
-		((p*np.cos(nu))/(1+e*np.cos(nu))).tolist(),
-		((p*np.sin(nu))/(1+e*np.cos(nu))).tolist(),
-		np.zeros(n_vectors).tolist()
-		])
+	#define r in the perifocal plane
+	r_pqw = np.vstack([ \
+	((p*np.cos(nu))/(1+e*np.cos(nu))),
+	((p*np.sin(nu))/(1+e*np.cos(nu))),
+	np.zeros(n_vectors)
+	])
 
-		#define v in the perifocal plane
-		v_pqw = np.array([ \
-		(-np.sqrt(mu/p)*np.sin(nu)).tolist(),
-		(np.sqrt(mu/p)*(e+np.cos(nu))).tolist(),
-		np.zeros(n_vectors).tolist()
-		])
-	except:
-		#define r in the perifocal plane
-		r_pqw = np.array([ \
-		((p*np.cos(nu))/(1+e*np.cos(nu))),
-		((p*np.sin(nu))/(1+e*np.cos(nu))),
-		0
-		])
+	#define v in the perifocal plane
+	v_pqw = np.vstack([ \
+	(-np.sqrt(mu/p)*np.sin(nu)).tolist(),
+	(np.sqrt(mu/p)*(e+np.cos(nu))).tolist(),
+	np.zeros(n_vectors).tolist()
+	])
 
-		#define v in the perifocal plane
-		v_pqw = np.array([ \
-		(-np.sqrt(mu/p)*np.sin(nu)),
-		(np.sqrt(mu/p)*(e+np.cos(nu))),
-		0
-		])		
 
-	r_tmp = block_diag(rz(-omega)).dot(r_pqw.T.reshape(3*n_vectors,1))
-	r_tmp = block_diag(rx(-i)).dot(r_tmp.T.reshape(3*n_vectors,1))
-	r_ijk = block_diag(rz(-OMEGA)).dot(r_tmp.T.reshape(3*n_vectors,1))
+	pqw2ijk = rz(-OMEGA).dot(rx(-i).dot(rz(-omega)))
 
-	v_tmp = block_diag(rz(-omega)).dot(v_pqw.T.reshape(3*n_vectors,1))
-	v_tmp = block_diag(rx(-i)).dot(v_tmp.T.reshape(3*n_vectors,1))
-	v_ijk = block_diag(rz(-OMEGA)).dot(v_tmp.T.reshape(3*n_vectors,1))
+	r_ijk = pqw2ijk.dot(r_pqw)
+	v_ijk = pqw2ijk.dot(v_pqw)
 
-	# pqw2ijk = rz(-OMEGA)*rx(-i)*rz(-omega)
-	#convert from perifocal to inertial
-	# r_ijk = block_diag(pqw2ijk(OMEGA, omega, i)).dot(r_pqw.T.reshape(3*n_vectors,1))
-	# v_ijk = block_diag(pqw2ijk(OMEGA, omega, i)).dot(v_pqw.T.reshape(3*n_vectors,1))
-
-	r_ijk = r_ijk.reshape(n_vectors,3)[0]
-	v_ijk = v_ijk.reshape(n_vectors,3)[0]
-
-	return np.hstack([r_ijk,v_ijk])
+	return np.vstack([r_ijk,v_ijk])
 
 #------------------------------------------------------------------
 #
