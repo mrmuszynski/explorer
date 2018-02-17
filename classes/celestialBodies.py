@@ -7,7 +7,7 @@
 #	Synopsis: Vehicle portion of the explorer object model
 # 
 ###############################################################################
-from numpy import sin, array, empty
+from numpy import sin, array, empty, deg2rad, rad2deg
 import sys
 sys.path.insert(0, 'util')
 from orbits import coe2rv
@@ -19,8 +19,8 @@ class celestialBody:
 		self.mu = -1
 		self.state = -1
 		self.simScenario = -1
-		self.stateHistory = empty((6,0),float)
-		self.currentState = empty((6,0),float)
+		self.stateHistory = empty((0,6),float)
+		self.currentState = empty((0,6),float)
 
 	def initSun(self):
 		self.name = 'Sun'
@@ -135,7 +135,7 @@ class celestialBody:
 		Taken from CU Boulder ASEN 6008 Interplanetary Mission Design
 		notes by Kate Davis
 		"""
-		T = (currentJD - 2451545.0)/36525
+		T = (currentJD - 2451545.0)/36525.
 		element = coeffs[0] + \
 				  coeffs[1]*T + \
 				  coeffs[2]*T**2 + \
@@ -147,6 +147,7 @@ class celestialBody:
 		Taken from CU Boulder ASEN 6008 Interplanetary Mission Design
 		notes by Kate Davis
 		"""
+		au = 1.49597870700e11
 		L,T = self.calculateMeeus(self.meeusCoeffs['L'], t)
 		a,T = self.calculateMeeus(self.meeusCoeffs['a'], t)
 		a *= au/1000
@@ -158,17 +159,16 @@ class celestialBody:
 		omega = PI - OMEGA
 		M = L - PI
 
+		M = deg2rad(M)
 
-		Cen = (2*e-e**3/4+5*e**5/96)*sin(M) + \
-			  (5*e**2/4-11*e**4/24)*sin(2*M) + \
-			  (13*e**3/12-43*e**5/64)*sin(3*M) + \
-			  (103*e**4/96)*sin(4*M) + \
-			  (1097*e**5/960)*sin(5*M)
+		CCen = (2.*e-e**3./4.+5.*e**5./96.)*sin(M) + \
+			  (5.*e**2./4.-11.*e**4./24.)*sin(2.*M) + \
+			  (13.*e**3./12.-43.*e**5./64.)*sin(3.*M) + \
+			  (103.*e**4./96.)*sin(4.*M) + \
+			  (1097.*e**5./960.)*sin(5.*M)
 
-
-		nu = M + Cen
-
-		return coe2rv(a,e,i,OMEGA,omega,nu,mu=1.32712428e11)
+		nu = rad2deg(M + CCen)
+		return coe2rv(a,e,i,OMEGA,omega,nu,mu=1.32712440018e11)
 
 
 

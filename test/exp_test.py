@@ -18,8 +18,8 @@ import vehicles, celestialBodies, simScenario
 from constants import au
 from numpy import array, argmax, argmin, rad2deg, cos
 import matplotlib.pyplot as plt
-from timeFcn import timeConvert
-
+from timeFcn import timeConvert, day2sec
+import orbits as o
 import pdb
 
 def test_anomalies():
@@ -77,7 +77,7 @@ def test_coe2rv():
 
 
 
-def test_meeusStateUpdate():
+def test_meeusStateUpdateVallado():
 	"""!
 	Test taken from Vallado Algorithm 33. P 296-298
 	"""
@@ -86,7 +86,7 @@ def test_meeusStateUpdate():
 	jupiter = celestialBodies.celestialBody()
 	jupiter.initJupiter()
 	scen = simScenario.simScenario()
-	scen.addNonGravBod([jupiter])
+	scen.addNonGravBody([jupiter])
 	t = scen.currentTime = timeConvert([1994,140,20],'ydnhms','jd')
 
 	#note that Vallado uses omega tilde where Davis uses PI.
@@ -136,5 +136,393 @@ def test_meeusStateUpdate():
 	# assert( abs(X[3] - 4.902276) < 0.000001 )
 	# assert( abs(X[4] - 5.533124) < 0.000001 )
 	# assert( abs(X[5] - (-1.975709)) < 0.000001 )
-	import pdb
-	pdb.set_trace()
+
+def test_meeusStateUpdateDavis():
+	"""!
+	Test taken from ASEN 6008 material, CU Boudler Spring 2018. Provided
+	by Dr. Kate Davis
+	"""
+
+	########################################################
+	# Test case 1
+	########################################################
+
+	venus = celestialBodies.celestialBody()
+	venus.initVenus()
+	earth = celestialBodies.celestialBody()
+	earth.initEarth()
+
+	departureJD = 2455450.
+	arrivalJD = 2455610.
+
+	planet1AtDeparture = earth.meeusStateUpdate(departureJD)
+	planet2AtArrival = venus.meeusStateUpdate(arrivalJD)
+
+	correctPlanet1AtDeparture = array([
+		147084764.907217,
+		-32521189.6497507, 
+		467.1900914, 
+		5.94623924, 
+		28.97464121, 
+		-0.000715915])
+
+	correctPlanet2AtArrival = array([
+		-88002509.1583767,
+		-62680223.1330849, 
+		4220331.52492018, 
+		20.0705935958064, 
+		-28.6898298667745, 
+		-1.55129181466267])
+
+	diff1 = planet1AtDeparture - correctPlanet1AtDeparture
+	diff2 = planet2AtArrival - correctPlanet2AtArrival
+
+	#assert that all match within 12 digits (or more) precision
+	assert(abs(diff1[0]) < 5e-6)
+	assert(abs(diff1[1]) < 5e-6)
+	assert(abs(diff1[2]) < 5e-8)
+	assert(abs(diff1[3]) < 5e-10)
+	assert(abs(diff1[4]) < 5e-10)
+	assert(abs(diff1[5]) < 5e-10)
+	assert(abs(diff2[0]) < 5e-6)
+	assert(abs(diff2[1]) < 5e-6)
+	assert(abs(diff2[2]) < 5e-7)
+	assert(abs(diff2[3]) < 5e-12)
+	assert(abs(diff2[4]) < 5e-12)
+	assert(abs(diff2[5]) < 5e-14)
+
+	########################################################
+	# Test case 2
+	########################################################
+
+	mars = celestialBodies.celestialBody()
+	mars.initMars()
+	jupiter = celestialBodies.celestialBody()
+	jupiter.initJupiter()
+
+	departureJD = 2456300.
+	arrivalJD = 2457500.
+
+	planet1AtDeparture = mars.meeusStateUpdate(departureJD)
+	planet2AtArrival = jupiter.meeusStateUpdate(arrivalJD)
+
+	correctPlanet1AtDeparture = array([
+		170145121.321308,
+		-117637192.836034,
+		-6642044.2724648,
+		14.7014998589987,
+		22.0029290376879,
+		0.100109561656046])
+	correctPlanet2AtArrival = array([
+		-803451694.669228,
+		121525767.116065,
+		17465211.7766441,
+		-2.11046595903622,
+		-12.3119924444556,
+		0.0981984077206206])
+
+	diff1 = planet1AtDeparture - correctPlanet1AtDeparture
+	diff2 = planet2AtArrival - correctPlanet2AtArrival
+
+	#assert that all match within 12 digits (or more) precision
+	assert(abs(diff1[0]) < 5e-6)
+	assert(abs(diff1[1]) < 5e-6)
+	assert(abs(diff1[2]) < 5e-8)
+	assert(abs(diff1[3]) < 5e-10)
+	assert(abs(diff1[4]) < 5e-10)
+	assert(abs(diff1[5]) < 5e-10)
+	assert(abs(diff2[0]) < 5e-6)
+	assert(abs(diff2[1]) < 5e-6)
+	assert(abs(diff2[2]) < 5e-7)
+	assert(abs(diff2[3]) < 5e-12)
+	assert(abs(diff2[4]) < 5e-12)
+	assert(abs(diff2[5]) < 5e-14)
+
+	########################################################
+	# Test case 3
+	########################################################
+	saturn = celestialBodies.celestialBody()
+	saturn.initSaturn()
+	neptune = celestialBodies.celestialBody()
+	neptune.initNeptune()
+
+	departureJD = 2455940
+	arrivalJD = 2461940
+
+	planet1AtDeparture = saturn.meeusStateUpdate(departureJD)
+	planet2AtArrival = neptune.meeusStateUpdate(arrivalJD)
+
+	correctPlanet1AtDeparture = array([
+		-1334047119.28306,
+		-571391392.847366,
+		63087187.1397936,
+		3.26566097701568,
+		-8.8999508220789,
+		0.0250518196387099])
+
+	correctPlanet2AtArrival = array([
+		4446562424.74189,
+		484989501.499146,
+		-111833872.461498,
+		-0.627466452223638,
+		5.42732630878375,
+		-0.0978994819146572])
+
+	diff1 = planet1AtDeparture - correctPlanet1AtDeparture
+	diff2 = planet2AtArrival - correctPlanet2AtArrival
+
+	assert(abs(diff1[0]) < 5e-6)
+	assert(abs(diff1[1]) < 5e-6)
+	assert(abs(diff1[2]) < 5e-8)
+	assert(abs(diff1[3]) < 5e-10)
+	assert(abs(diff1[4]) < 5e-10)
+	assert(abs(diff1[5]) < 5e-10)
+	assert(abs(diff2[0]) < 5e-6)
+	assert(abs(diff2[1]) < 5e-6)
+	assert(abs(diff2[2]) < 5e-7)
+	assert(abs(diff2[3]) < 5e-12)
+	assert(abs(diff2[4]) < 5e-12)
+	assert(abs(diff2[5]) < 5e-14)
+	########################################################
+	# Test case 4
+	########################################################
+
+	venus = celestialBodies.celestialBody()
+	venus.initVenus()
+	earth = celestialBodies.celestialBody()
+	earth.initEarth()
+
+	departureJD = 2460545
+	arrivalJD = 2460919
+
+	planet1AtDeparture = earth.meeusStateUpdate(departureJD)
+	planet2AtArrival = venus.meeusStateUpdate(arrivalJD)
+
+	correctPlanet1AtDeparture = array([
+		130423562.062471,
+		-76679031.8462418,
+		3624.81656101975,
+		14.6129412274587,
+		25.5674761326208,
+		-0.00150344550048443])
+	correctPlanet2AtArrival = array([
+		19195371.6699821,
+		106029328.360906,
+		348953.802015791,
+		-34.5791361074399,
+		6.06419077607759,
+		2.07855065113644])
+
+
+	diff1 = planet1AtDeparture - correctPlanet1AtDeparture
+	diff2 = planet2AtArrival - correctPlanet2AtArrival
+
+	assert(abs(diff1[0]) < 5e-6)
+	assert(abs(diff1[1]) < 5e-6)
+	assert(abs(diff1[2]) < 5e-8)
+	assert(abs(diff1[3]) < 5e-10)
+	assert(abs(diff1[4]) < 5e-10)
+	assert(abs(diff1[5]) < 5e-10)
+	assert(abs(diff2[0]) < 5e-5)
+	assert(abs(diff2[1]) < 5e-6)
+	assert(abs(diff2[2]) < 5e-7)
+	assert(abs(diff2[3]) < 5e-13)
+	assert(abs(diff2[4]) < 5e-12)
+	assert(abs(diff2[5]) < 5e-14)
+
+
+def test_lambertSolver():
+	"""!
+	Test taken from ASEN 6008 material, CU Boudler Spring 2018. Provided
+	by Dr. Kate Davis
+	"""
+
+	muSun = 1.32712440018e11
+	########################################################
+	# Test case 1
+	########################################################
+
+	departureJD = 2455450.
+	arrivalJD = 2455610.
+	TOFdays = arrivalJD - departureJD
+	TOFs = day2sec(TOFdays)
+
+	planet1AtDeparture = array([
+		147084764.907217,
+		-32521189.6497507, 
+		467.1900914, 
+		5.94623924, 
+		28.97464121, 
+		-0.000715915])
+
+	planet2AtArrival = array([
+		-88002509.1583767,
+		-62680223.1330849, 
+		4220331.52492018, 
+		20.0705935958064, 
+		-28.6898298667745, 
+		-1.55129181466267])
+
+	lam = o.lambert(planet1AtDeparture,planet2AtArrival,TOFs,mu=muSun)
+	v0 = lam['v_0']
+	vf = lam['v_f']
+	correctV0 = array([4.65144349746008, 26.0824144093203, -1.39306043231699])
+	correctVf = array([16.7926204519414, -33.3516748429805, 1.52302150358741])
+
+	v0Diff = v0 - correctV0
+	vfDiff = vf - correctVf
+
+	assert(abs(v0Diff[0]) < 5e-12)
+	assert(abs(v0Diff[1]) < 5e-13)
+	assert(abs(v0Diff[2]) < 5e-14)
+	assert(abs(vfDiff[0]) < 5e-12)
+	assert(abs(vfDiff[1]) < 5e-12)
+	assert(abs(vfDiff[2]) < 5e-13)
+
+	departureVInf = v0 - planet1AtDeparture[3:6]
+	arrivalVInf = vf - planet2AtArrival[3:6]
+	correctDepartureVInf = \
+		array([-1.29479574247079, -2.89222680107954, -1.39234451716994])
+	correctArrivalVInf = \
+		array([-3.27797314386492,-4.66184497620607,3.07431331825009])
+
+	departureVInfDiff = departureVInf - correctDepartureVInf
+	arrivalVInfDiff = arrivalVInf -  correctArrivalVInf
+
+
+	assert(abs(departureVInfDiff[0]) < 5e-10)
+	assert(abs(departureVInfDiff[1]) < 5e-10)
+	assert(abs(departureVInfDiff[2]) < 5e-10)
+	assert(abs(arrivalVInfDiff[0]) < 5e-12)
+	assert(abs(arrivalVInfDiff[1]) < 5e-12)
+	assert(abs(arrivalVInfDiff[2]) < 5e-13)
+
+	########################################################
+	# Test case 2
+	########################################################
+
+	departureJD = 2456300.
+	arrivalJD = 2457500.
+	TOFdays = arrivalJD - departureJD
+	TOFs = day2sec(TOFdays)
+
+	planet1AtDeparture = array([
+		170145121.321308,
+		-117637192.836034,
+		-6642044.2724648,
+		14.7014998589987,
+		22.0029290376879,
+		0.100109561656046])
+
+	planet2AtArrival = array([
+		-803451694.669228,
+		121525767.116065,
+		17465211.7766441,
+		-2.11046595903622,
+		-12.3119924444556,
+		0.0981984077206206])
+
+	lam = o.lambert(planet1AtDeparture,planet2AtArrival,TOFs,mu=muSun)
+	v0 = lam['v_0']
+	vf = lam['v_f']
+	correctV0 = array([13.74077736, 28.83099312, 0.691285008])
+	correctVf = array([-0.883933069, -7.983627014, -0.240770598])
+
+	v0Diff = v0 - correctV0
+	vfDiff = vf - correctVf
+
+	assert(abs(v0Diff[0]) < 5e-9)
+	assert(abs(v0Diff[1]) < 5e-9)
+	assert(abs(v0Diff[2]) < 5e-10)
+	assert(abs(vfDiff[0]) < 5e-10)
+	assert(abs(vfDiff[1]) < 5e-10)
+	assert(abs(vfDiff[2]) < 5e-10)
+
+	########################################################
+	# Test case 3
+	########################################################
+	departureJD = 2455940.
+	arrivalJD = 2461940.
+	TOFdays = arrivalJD - departureJD
+	TOFs = day2sec(TOFdays)
+
+
+	planet1AtDeparture = array([
+		-1334047119.28306,
+		-571391392.847366,
+		63087187.1397936,
+		3.26566097701568,
+		-8.8999508220789,
+		0.0250518196387099])
+
+	planet2AtArrival = array([
+		4446562424.74189,
+		484989501.499146,
+		-111833872.461498,
+		-0.627466452223638,
+		5.42732630878375,
+		-0.0978994819146572])
+
+	lam = o.lambert(planet1AtDeparture,planet2AtArrival,TOFs,mu=muSun)
+	v0 = lam['v_0']
+	vf = lam['v_f']
+	correctV0 = array([11.18326152, -8.90233011, 0.420697886])
+	correctVf = array([7.522127215, 4.928368894, -0.474069569])
+
+	v0Diff = v0 - correctV0
+	vfDiff = vf - correctVf
+	assert(abs(v0Diff[0]) < 5e-9)
+	assert(abs(v0Diff[1]) < 5e-10)
+	assert(abs(v0Diff[2]) < 5e-11)
+	assert(abs(vfDiff[0]) < 5e-11)
+	assert(abs(vfDiff[1]) < 5e-10)
+	assert(abs(vfDiff[2]) < 5e-10)
+
+
+	########################################################
+	# Test case 4
+	########################################################
+
+	departureJD = 2460545
+	arrivalJD = 2460919
+	TOFdays = arrivalJD - departureJD
+	TOFs = day2sec(TOFdays)
+
+
+	planet1AtDeparture = array([
+		130423562.062471,
+		-76679031.8462418,
+		3624.81656101975,
+		14.6129412274587,
+		25.5674761326208,
+		-0.00150344550048443])
+	planet2AtArrival = array([
+		19195371.6699821,
+		106029328.360906,
+		348953.802015791,
+		-34.5791361074399,
+		6.06419077607759,
+		2.07855065113644])
+
+	lam = o.lambert(planet1AtDeparture,planet2AtArrival,TOFs,mu=muSun,
+		revs=1,type=3)
+	v0 = lam['v_0']
+	vf = lam['v_f']
+	correctV0 = array([12.76771134, 22.79158874, 0.090338826])
+	correctVf = array([-37.30072389, -0.176853447, -0.066693083])
+
+	v0Diff = v0 - correctV0
+	vfDiff = vf - correctVf
+	assert(abs(v0Diff[0]) < 5e-9 )
+	assert(abs(v0Diff[1]) < 5e-9 )
+	assert(abs(v0Diff[2]) < 5e-10 )
+	assert(abs(vfDiff[0]) < 5e-9 )
+	assert(abs(vfDiff[1]) < 5e-11 )
+	assert(abs(vfDiff[2]) < 5e-10 )
+
+
+
+
+
+
+

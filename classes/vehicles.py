@@ -7,7 +7,7 @@
 #	Synopsis: Vehicle portion of the explorer object model
 # 
 ###############################################################################
-from numpy import array, hstack, empty, zeros
+from numpy import array, hstack, vstack, empty, zeros, deg2rad, sin, cos
 from scipy.linalg import norm, inv
 from scipy.integrate import ode
 import sys
@@ -19,9 +19,9 @@ import rigidBodyKinematics as rbk
 class spacecraft:
 	def __init__(self):
 		self.simScenario = -1
-		self.initialState = empty((0,12),float)
-		self.stateHistory = empty((0,12),float)
-		self.currentState = empty((0,12),float)
+		self.initialState = empty((12,0),float)
+		self.stateHistory = empty((12,0),float)
+		self.currentState = empty((12,0),float)
 		self.cssList = []
 		self.name = -1
 		self.I = -1
@@ -34,8 +34,8 @@ class spacecraft:
 		a = -self.simScenario.centralBody.mu*r/norm(r)**3
 		return a
 
-	def rigidBodyEOM(self, omega, I, L):
-		IomegaDot = -tilde(omega).dot(I.dot(omega)) + L
+	def rigidBodyEOM(self, omega, I, L, u):
+		IomegaDot = -tilde(omega).dot(I.dot(omega)) + u + L
 		omegaDot = inv(I).dot(IomegaDot)
 		return omegaDot
 
@@ -54,8 +54,8 @@ class spacecraft:
 		for css in self.cssList:
 			css.updateState()
 
-
 	def propagate(self):
+
 		def accel(t, state):
 			r = state[0:3]
 			v = state[3:6]
@@ -67,20 +67,33 @@ class spacecraft:
 			rDot = v
 			vDot = self.gCB(t,r)
 			sigmaDot = rbk.omega2sigmaDot(omega,sigma)
+			omegaDot = array([0,0,0])
+
+			# ewDiff = self.cssList[0].eastState - self.cssList[0].westState
+			# nsDiff = self.cssList[0].northState - self.cssList[0].southState
 			L = 0
-			omegaDot = self.rigidBodyEOM(omega, self.I, L)
+			K = 10
+			P = 10
+
+			# PHI = deg2rad(0)
+			# sigma0 = array([0,0,sin(PHI/2)/(1+cos(PHI/2))])
+			# import pdb
+			# pdb.set_trace()
+			# u = -K*(sigma - sigma0) - P*omega + tilde(omega).dot(self.I.dot(omega)) - L
+			# omegaDot = self.rigidBodyEOM(omega, self.I, L, u)
 			# for body in self.simScenario.gravBodList:
 			# 	a += self.gThirdBody(t, state, body)
-
 			return hstack([rDot,vDot,sigmaDot,omegaDot])
+
 		if norm(self.currentState[6:9]) > 1: 
 			self.currentState[6:9]/=-sum(self.currentState[6:9]**2)
+
 		solver = ode(accel).set_integrator('dopri5')
 		solver.set_initial_value(self.currentState, 0)
-
 		self.currentState = solver.integrate(
-			self.simScenario.timeStep*24*3600).reshape(-1,1)
-		self.stateHistory = hstack([self.stateHistory,self.currentState])
+			self.simScenario.timeStep*24*3600)
+		print(self.simScenario.timeStep*24*3600)
+		self.stateHistory = vstack([self.stateHistory,self.currentState])
 
 		self.sesorUpdate()
 
