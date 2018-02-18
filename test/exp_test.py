@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, '../classes')
 sys.path.insert(0, '../prop')
 sys.path.insert(0, '../fsw')
-sys.path.insert(0, '../util')
+sys.path.insert(0, '../../lib/')
 
 import vehicles, celestialBodies, simScenario
 from constants import au
