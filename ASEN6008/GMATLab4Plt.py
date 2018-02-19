@@ -46,7 +46,7 @@ data2018 = load('GMATLab4Data/opportunity2018.npz')
 plt.figure()
 TOFLevels = [50,100,150,200,250,300,350,400,450,500]
 C3Levels = [16,17,19,21,25,36,55,100]
-vInfLevels = [2.5,3,4,5,7.5,10]
+vInfLevels = [2.5,3,4,4.5,5,7.5,10]
 
 TOF = plt.contour(data2005['TOF'],levels=TOFLevels,linewidths=0.5,colors='black')
 C3 = plt.contour(data2005['C3'], levels=C3Levels,linewidths=0.5,colors='red')
@@ -67,7 +67,7 @@ plt.title('2005 Launch Opportunity')
 plt.figure()
 TOFLevels = [100,150,200,250,300,350,400]
 C3Levels = [10,12,16,20,25,36,80]
-vInfLevels = [4,5,7.5,10]
+vInfLevels = [4,4.5,5,7.5,10]
 TOF = plt.contour(data2016['TOF'], levels=TOFLevels, linewidths=0.5,colors='black')
 C3 = plt.contour(data2016['C3'], levels=C3Levels, linewidths=0.5,colors='red')
 vInf = plt.contour(data2016['vInf'], levels=vInfLevels, linewidths=0.5,colors='blue')
