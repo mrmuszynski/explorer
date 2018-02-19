@@ -1,0 +1,27 @@
+NOTES ON WHERE YOU ARE HERE.
+
+
+Complete:
+	mrp/dcm conversions
+	Model CSS
+
+To Do:
+	mrp/dcm testing
+	CSS testing
+	implement omega vector/omega vector history
+	implement rotational kinematics
+	test rotational kinematics
+	implement simple CSS control
+	CSS updateState
+		add luminousBodyList 
+			**is this actually how we want this?**
+			**maybe we really just want reflective**
+			**then the sun would be treated differently**
+		add reflectiveBodyList
+		add illumination model
+		iterate through each list
+	Round of commenting
+
+	Strangeness
+		Can I really use JD? Or does python's float precision
+		screw me there?
