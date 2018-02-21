@@ -16,7 +16,7 @@ sys.path.insert(0, '../../lib')
 
 import vehicles, celestialBodies, simScenario
 from numpy import linspace, hstack, pi, array, arccos, cos, cross
-from numpy import rad2deg, arctan2
+from numpy import rad2deg, arctan2, vstack
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from timeFcn import timeConvert, sec2day, day2sec
@@ -106,15 +106,24 @@ psiEarthFlyby = arccos(vInfIn.dot(vInfOut)/(norm(vInfIn)*norm(vInfOut)))
 rP = closestApproach(psiEarthFlyby, muEarth, norm(vInfIn))
 
 S = vInfIn/norm(vInfIn)
-bHat = cross(S,k)
+T = cross(S,k)
+T = T/norm(T)
+R = cross(S,T)
+R = R/norm(R)
 bMag = \
 	muEarth/vInfIn.dot(vInfIn)*(
 		(1 + vInfIn.dot(vInfIn)*rP/muEarth)**2 - 1
 		)**0.5
-B = bMag*bHat
-bT = B[1]
-bR = B[0]
-thetaRad = arctan2(bT,bR)
+# B = bMag*bHat
+H = cross(vInfIn,vInfOut)
+h = H/norm(H)
+b = cross(S,h)
+B = bMag*b
+HCI2STR = vstack([S,T,R])
+bSTRFrame = HCI2STR.dot(B)
+bT = bSTRFrame[1]
+bR = bSTRFrame[2]
+thetaRad = arctan2(bR,bT)
 thetaDeg = rad2deg(thetaRad)
 
 print('')
@@ -122,11 +131,16 @@ print('Problem 2')
 print('Periapse Radius: ' + str(rP))
 print('psiEarthFlyby (rad): ' + str(psiEarthFlyby))
 print('psiEarthFlyby (deg): ' + str(rad2deg(psiEarthFlyby)))
+#Gabe's answer: -1.847e8 
 print('bT: ' + str(bT))
+#Gabe's answer: -7.062e7 
 print('bR: ' + str(bR))
+#Gabe's answer 1.9777e8
 print('bMag: ' + str(bMag))
+#Gabe's answer: 2.7764
 print('thetaRad: ' + str(thetaRad))
 print('thetaDeg: ' + str(thetaDeg))
+
 
 ###############################################################################
 #
@@ -181,7 +195,7 @@ earth2Jupiter = o.lambert(
 vInfIncoming = launch2Venus['vInfArrive']
 vInfDeparting = venus2Earth['vInfDepart']
 psiVenusFlyby = arccos(vInfIncoming.dot(vInfDeparting)/(norm(vInfIncoming)*norm(vInfDeparting)))
-rP = closestApproach(psiVenusFlyby, muEarth, norm(vInfIncoming))
+rP = closestApproach(psiVenusFlyby, muVenus, norm(vInfIncoming))
 
 vSpacecraftSunArrival = vInfIncoming + venusEncounterState[3:6]
 vSpacecraftSunDeparture = vInfDeparting + venusEncounterState[3:6]

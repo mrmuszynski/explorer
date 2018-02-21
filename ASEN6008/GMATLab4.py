@@ -60,6 +60,8 @@ class porkchopPlot:
 		TOF = []
 		C3 = []
 		vInf = []
+		departureJD = []
+		arrivalJD = []
 		i = []
 		for arrivalDate in arrivalDates:
 			arrivalPos = self.arrivalBody.meeusStateUpdate(arrivalDate)
@@ -74,11 +76,13 @@ class porkchopPlot:
 				C3 = hstack([C3,lam['C3']])
 				vInf = hstack([vInf,norm(lam['vInfArrive'])])
 				i = hstack([i,lam['i']])
-
+				departureJD = hstack([departureJD,departureDate])
+				arrivalJD = hstack([arrivalJD,arrivalDate])
 		self.TOF = TOF.reshape(len(arrivalDates),len(departureDates))
 		self.C3 = C3.reshape(len(arrivalDates),len(departureDates))
 		self.vInf = vInf.reshape(len(arrivalDates),len(departureDates))		
-
+		self.departureJD = departureJD.reshape(len(arrivalDates),len(departureDates))
+		self.arrivalJD = arrivalJD.reshape(len(arrivalDates),len(departureDates))
 ###############################################################################
 #
 #	Recreate plot from page 2 of lab.
@@ -97,8 +101,10 @@ opportunity2005.arrivalBody = mars
 opportunity2005.centralBody = sun
 opportunity2005.departureDelta = 140
 opportunity2005.arrivalDelta = 450
-savez('GMATLab4Data/opportunity2005.npz',TOF=opportunity2005.TOF,C3=opportunity2005.C3,vInf=opportunity2005.vInf)
 opportunity2005.runPorkchop()
+savez('GMATLab4Data/opportunity2005.npz',
+	TOF=opportunity2005.TOF,C3=opportunity2005.C3,vInf=opportunity2005.vInf,
+	arrivalJD=opportunity2005.arrivalJD,departureJD=opportunity2005.departureJD)
 
 ###############################################################################
 #
@@ -114,8 +120,10 @@ opportunity2018.arrivalBody = mars
 opportunity2018.centralBody = sun
 opportunity2018.departureDelta = 2458320.0 - opportunity2018.earliestDeparture
 opportunity2018.arrivalDelta = 2458600.0 - opportunity2018.earliestArrival
-savez('GMATLab4Data/opportunity2018.npz',TOF=opportunity2018.TOF,C3=opportunity2018.C3,vInf=opportunity2018.vInf)
 opportunity2018.runPorkchop()
+savez('GMATLab4Data/opportunity2018.npz',
+	TOF=opportunity2018.TOF,C3=opportunity2018.C3,vInf=opportunity2018.vInf,
+	arrivalJD=opportunity2018.arrivalJD,departureJD=opportunity2018.departureJD)
 
 
 ###############################################################################
@@ -132,8 +140,10 @@ opportunity2016.arrivalBody = mars
 opportunity2016.centralBody = sun
 opportunity2016.departureDelta = 2457509.0  - opportunity2016.earliestDeparture
 opportunity2016.arrivalDelta = 2457790.0  - opportunity2016.earliestArrival
-savez('GMATLab4Data/opportunity2016.npz',	TOF=opportunity2016.TOF,C3=opportunity2016.C3,vInf=opportunity2016.vInf)
 opportunity2016.runPorkchop()
+savez('GMATLab4Data/opportunity2016.npz',
+	TOF=opportunity2016.TOF,C3=opportunity2016.C3,vInf=opportunity2016.vInf,
+	arrivalJD=opportunity2016.arrivalJD,departureJD=opportunity2016.departureJD)
 
 
 pdb.set_trace()
