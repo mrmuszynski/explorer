@@ -43,14 +43,17 @@ def computeB(r,v):
 	rhat = cross(s,t)
 	bHat = cross(s,h)
 	b = earth.mu/v.dot(v)*sqrt((1+v.dot(v)*(rP/earth.mu))**2-1)
-	return b*bHat
+	ijk2str = vstack([s,t,rhat])
+	return (b*bHat,ijk2str)
 
 def dBdV(vNominal,vPerturbed,r):
-	bNominal = computeB(r,vNominal)
-	bPerturbed = computeB(r,vPerturbed)
-	if sum((vNominal - vPerturbed) == 0) != 2: 
+	bNominal = computeB(r,vNominal)[0]
+	ijk2strNominal = computeB(r,vPerturbed)[1]
+	bPerturbed = computeB(r,vPerturbed)[0]
+	if sum((vNominal - vPerturbed) == 0) < 2: 
 		print('WARNING: Only one element of vInf can be varied!')
-	return (bPerturbed - bNominal)/norm(vNominal - vPerturbed)
+	dBdVijk = (bPerturbed - bNominal)/norm(vNominal - vPerturbed)
+	return ijk2strNominal.dot(dBdVijk)
 
 rSOI = array([546507.344255845, -527978.380486028, 531109.066836708])
 vSOI = array([-4.9220589268733, 5.36316523097915, -5.22166308425181])
@@ -64,34 +67,19 @@ dBRdVy = []
 for perturbation in perturbations:
 	v = vSOI + array([perturbation,0,0])
 	partial = dBdV(vSOI,v,rSOI)
-	dBTdVx = hstack([dBTdVx,partial[0]])
-	dBRdVx = hstack([dBRdVx,partial[1]])
+	dBTdVx = hstack([dBTdVx,partial[1]])
+	dBRdVx = hstack([dBRdVx,partial[2]])
 	v = vSOI + array([0,perturbation,0])
 	partial = dBdV(vSOI,v,rSOI)
-	dBTdVy = hstack([dBTdVy,partial[0]])
-	dBRdVy = hstack([dBRdVy,partial[1]])
+	dBTdVy = hstack([dBTdVy,partial[1]])
+	dBRdVy = hstack([dBRdVy,partial[2]])
 
-f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
-
-ax1.semilogx(perturbations,dBTdVx)
-ax1.set_title('dBTdVx')
-ax1.set_xlabel('Peturbation')
-ax1.set_ylabel('dBTdVx')
-
-ax2.semilogx(perturbations,dBTdVy)
-ax2.set_title('dBTdVy')
-ax2.set_xlabel('Peturbation')
-ax2.set_ylabel('dBTdVy')
-
-ax3.semilogx(perturbations,dBRdVx)
-ax3.set_title('dBRdVx')
-ax3.set_xlabel('Peturbation')
-ax3.set_ylabel('dBRdVx')
-
-ax4.semilogx(perturbations,dBRdVy)
-ax4.set_title('dBRdVy')
-ax4.set_xlabel('Peturbation')
-ax4.set_ylabel('dBRdVy')
+plt.figure()
+plt.semilogx(perturbations,dBTdVx,label=r'$\frac{\partial B_T}{\partial V_x}$')
+plt.semilogx(perturbations,dBTdVy,label=r'$\frac{\partial B_T}{\partial V_y}$')
+plt.semilogx(perturbations,dBRdVx,label=r'$\frac{\partial B_R}{\partial V_x}$')
+plt.semilogx(perturbations,dBRdVy,label=r'$\frac{\partial B_R}{\partial V_y}$')
+plt.legend()
 
 pdb.set_trace()
 
