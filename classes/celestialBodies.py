@@ -7,7 +7,7 @@
 #	Synopsis: Vehicle portion of the explorer object model
 # 
 ###############################################################################
-from numpy import sin, array, empty, deg2rad, rad2deg
+from numpy import sin, array, empty, deg2rad, rad2deg, vstack
 import sys
 sys.path.insert(0, 'util')
 from orbits import coe2rv
@@ -147,6 +147,7 @@ class celestialBody:
 		Taken from CU Boulder ASEN 6008 Interplanetary Mission Design
 		notes by Kate Davis
 		"""
+
 		au = 1.49597870700e11
 		L,T = self.calculateMeeus(self.meeusCoeffs['L'], t)
 		a,T = self.calculateMeeus(self.meeusCoeffs['a'], t)
@@ -168,8 +169,11 @@ class celestialBody:
 			  (1097.*e**5./960.)*sin(5.*M)
 
 		nu = rad2deg(M + CCen)
-		return coe2rv(a,e,i,OMEGA,omega,nu,mu=1.32712440018e11)
 
+		states = empty((0,6),float)
+
+
+		return coe2rv(a,e,i,OMEGA,omega,nu,mu=1.32712440018e11)
 
 
 
