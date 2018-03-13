@@ -16,7 +16,7 @@ sys.path.insert(0, '../../lib/')
 
 import vehicles, celestialBodies, simScenario
 from constants import au
-from numpy import array, argmax, argmin, rad2deg, cos
+from numpy import array, argmax, argmin, rad2deg, cos, zeros
 import matplotlib.pyplot as plt
 from timeFcn import timeConvert, day2sec
 import orbits as o
@@ -75,6 +75,26 @@ def test_coe2rv():
 	assert( abs(X[4] - 5.533140) < 0.0000005 )
 	assert( abs(X[5] - (-1.975710)) < 0.0000005 )
 
+def test_multiCoe2rv():
+	from orbits import coe2rv
+	p = zeros(10) + 11067.790 #in km 
+	e = zeros(10) + 0.83285
+	i = zeros(10) + 87.87 #in degrees
+	OMEGA = zeros(10) + 227.89 #in degrees
+	omega = zeros(10) + 53.38 #in degrees
+	nu = zeros(10) + 92.335 #in degrees
+	a = p/(1-e**2)
+	X = coe2rv(a,e,i,OMEGA,omega,nu)
+
+	#note: These answers differ from Vallado's but I did them
+	#by hand and they match what I have here, so I am quite
+	#certain he is wrong
+	assert( abs(X[0,0] - 6525.368) < 0.0005 )
+	assert( abs(X[1,1] - 6861.532) < 0.0005 )
+	assert( abs(X[2,2] - 6449.119) < 0.0005 )
+	assert( abs(X[3,3] - 4.902279) < 0.0000005 )
+	assert( abs(X[4,4] - 5.533140) < 0.0000005 )
+	assert( abs(X[5,5] - (-1.975710)) < 0.0000005 )
 
 
 def test_meeusStateUpdateVallado():
@@ -178,6 +198,7 @@ def test_meeusStateUpdateDavis():
 	diff2 = planet2AtArrival - correctPlanet2AtArrival
 
 	#assert that all match within 12 digits (or more) precision
+	print(diff1)
 	assert(abs(diff1[0]) < 5e-6)
 	assert(abs(diff1[1]) < 5e-6)
 	assert(abs(diff1[2]) < 5e-8)
