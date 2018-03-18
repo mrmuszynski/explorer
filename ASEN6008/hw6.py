@@ -15,7 +15,6 @@ sys.path.insert(0, '../fsw')
 sys.path.insert(0, '../../lib')
 
 import vehicles, celestialBodies, simScenario
-from analysisTools import computeB, dBdV
 
 from numpy import linspace, hstack, pi, array, arccos, sin, cos, cross
 from numpy import rad2deg, arctan2, vstack, sqrt, logspace, ones
