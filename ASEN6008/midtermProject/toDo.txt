@@ -1,0 +1,40 @@
+1. Porkchop Plots
+	a. Launch-VGA
+	b. VGA-EGA1
+	c. EGA2-JOI
+2. Take a look at old labs. Catalog which labs did what in GMAT
+3. Propagate to EGA1 in GMAT
+
+4. See lab document for the rest
+
+Lab1
+
+Lab2
+
+Lab3
+
+Lab4
+	No GMAT work in this lab.
+Lab5
+	Begins in LEO, targets DLA, RLA for Mars transfer
+		Varies TMI.V, PropTime, RAAN
+		Achieves C3, DLA, RLA
+	3 TCMs
+		Varies TCM.V, TCM.N, TCM.B
+		Achieves Mars Periapsis (closer each time)
+		At least one targets B-Plan params. Take a look at the lab...
+	Targets MOI
+Lab6
+	No GMAT work in this lab.
+
+
+https://solarsystem.nasa.gov/missions/galileo/in-depth/
+Key Dates
+Venus Flyby: 2/10/1990 (16,000 km distance)
+Earth-1 Flyby: 10/8/1990 (960 km distance)
+Gaspra Flyby: 10/29/1991 (1600 km distance)
+Earth-2 Flyby: 12/8/1992 (305 km distance)
+Ida Flyby: 8/28/1993 (2400 km distance)
+Discovery: Dactyl, first known moon of an asteroid
+Comet S/L-9 Jupiter Impact: July 16-22, 1994
+
